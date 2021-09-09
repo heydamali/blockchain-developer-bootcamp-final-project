@@ -1,4 +1,4 @@
-# A Betting platform 
+# A Blockchain Betting Platform 
 A Betting platform where users are allowed to bet on a number of possible outcomes of an event. Say for example Man-united are playing Arsenal this weekend. The possible outcomes are that Man-united wins or Arsenal wins. Now users of the platform can bet on either of the possible outcomes staking an amount. This amount is the expressed as a percentage of the total amount of that side of the bet. Said percentage would be used for rewarding each participant.
 
 ### Example
@@ -29,7 +29,7 @@ Possible returns = ((1.25 / 100) * 90000) + 500 = 1625USD
 Possible returns = ((1.1 / 100) * 40000) + 1000 = 1440USD
 
 
-# A dollar cost average investing platform for ETHEREUM
+# A Dollar-cost Averaging Investment Platform for ETHEREUM
 A dollar cost average investing platform for ETH that allows a user to set specific amount of cash they want to spend on buying ETH on a consistent basis say monthly, daily, biweekly, hourly etc.
 
 ### Key Components
