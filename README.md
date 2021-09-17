@@ -28,6 +28,9 @@ Possible returns = ((1.25 / 100) * 90000) + 500 = 1625USD
 (1000 / 90000) * 100 = 1.1%
 Possible returns = ((1.1 / 100) * 40000) + 1000 = 1440USD
 
+### Materials
+- Access control for limiting access to funds raised as well as setting a time limit before after which funds can be disbursed https://courses.consensys.net/courses/take/blockchain-developer-bootcamp-registration-2021/multimedia/25117355-access-control-design-patterns
+
 
 # A Dollar-cost Averaging Investment Platform for ETHEREUM
 A dollar cost average investing platform for ETH that allows a user to set specific amount of cash they want to spend on buying ETH on a consistent basis say monthly, daily, biweekly, hourly etc.
