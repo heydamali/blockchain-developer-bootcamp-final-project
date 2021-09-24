@@ -32,22 +32,6 @@ Possible returns = ((1.1 / 100) * 40000) + 1000 = 1440USD
 - Access control for limiting access to funds raised as well as setting a time limit before after which funds can be disbursed https://courses.consensys.net/courses/take/blockchain-developer-bootcamp-registration-2021/multimedia/25117355-access-control-design-patterns
 
 
-# A Dollar-cost Averaging Investment Platform for ETHEREUM
-A dollar cost average investing platform for ETH that allows a user to set specific amount of cash they want to spend on buying ETH on a consistent basis say monthly, daily, biweekly, hourly etc.
-
-### Key Components
-- Signup mechanism: Signup on this platform and create a fresh ETH account/address or use an exiting ETH account/address.
-- Payment collection mechanism: Allow users to deposit money to be used for buying crypto
-- Smart contract: To make the actual purchase of crypto at specified times
-
-### Workflow
-- Bob signs up to this platform, he's asked if he wants to create a new ETH account/address or use an existing one
-    - Bob opts to create a new one as he's new to crypto: a new ETH address is created on his behalf and used to create his wallet
-    - Bob opts to use an existing address as he's been into crypto for some time, his ETH address is collected and used to create his wallet
-- Bob is asked to set the frequency (Daily, Monthly, Weekly, Biweekly etc) to which he intends to buy ETH, this can be updated subsequently.
-- Bob is asked to make an initial deposit to begin or he can do that some other time, but until then, no ETH is purchased (Where would this money leave? maybe use that money to purchase a stable coin and hold that instead? most likely)
-- Assuming Bob opts for daily purchase at 12 Noon and make initial deposit, A smart contract is setup to make purchase of ETH using a stable coin based on the frequency set by Bob
-
 
 
 
