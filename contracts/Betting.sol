@@ -18,6 +18,7 @@ contract Betting {
   mapping (address => bool) public users;
   mapping (address => uint) public usersBalance;
   mapping (uint => Bet) public bets;
+  mapping (address => mapping (uint => Bet)) public usersBets;
   mapping (uint => mapping (address => uint)) public betStakeAmountPerAccount; 
   mapping (uint => mapping (address => uint)) public betStakePercentagePerAccount;
 
