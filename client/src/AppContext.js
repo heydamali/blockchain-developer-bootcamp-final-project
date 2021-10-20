@@ -5,6 +5,8 @@ const initialContext = {
   setMetaMaskWalletBalance: () => {},
   appWalletBalance: '--',
   setAppWalletBalance: () => {},
+  gamesList: [],
+  setGamesList: () => {},
   isWalletConnectionModalOpen: false,
   setWalletConnectModal: () => {},
   txnStatus: 'NOT_SUBMITTED',
@@ -16,14 +18,20 @@ const appReducer = (state, { type, payload }) => {
     case 'SET_META_MASK_WALLET_BALANCE':
       return {
         ...state,
-        metaMaskWalletBalance: payload,
+        metaMaskWalletBalance: payload
       };
   
     case 'SET_APP_WALLET_BALANCE':
       return {
         ...state,
-        appWalletBalance: payload,
+        appWalletBalance: payload
       };
+    
+    case 'SET_GAMES_LIST':
+      return {
+        ...state,
+        gamesList: payload
+      }
 
     case 'SET_WALLET_MODAL':
       return {
@@ -54,6 +62,10 @@ export const AppContextProvider = ({ children }) => {
     appWalletBalance: store.appWalletBalance,
     setAppWalletBalance: (balance) => {
       dispatch({ type: 'SET_APP_WALLET_BALANCE', payload: balance });
+    },
+    gamesList: store.gamesList,
+    setGamesList: (games) => {
+      dispatch({type: 'SET_GAMES_LIST', payload: games })
     },
     isWalletConnectModalOpen: store.isWalletConnectModalOpen,
     setWalletConnectModal: (open) => {

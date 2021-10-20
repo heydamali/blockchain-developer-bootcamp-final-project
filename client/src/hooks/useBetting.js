@@ -9,22 +9,32 @@ import { formatUnits, parseEther } from '@ethersproject/units';
 const useBetting = () => {
   const {account} = useWeb3React();
   const {isValidNetwork} = useIsValidNetwork();
-  const bettingContractAddress = '0x679F0bF295f531009ACC44eA2EC42120836B1ecD'; // Ropsten
+  const bettingContractAddress = '0x64fE85634E8A9440fDd689f625AAA1E6D215b7d5'; // Ropsten
   const bettingContract = useContract(bettingContractAddress, Betting.abi);
-  const {appWalletBalance, setAppWalletBalance} = useAppContext();
+  const { appWalletBalance, gamesList, setAppWalletBalance, setGamesList } = useAppContext();
   
   const fetchAppWalletBalance = async () => {
-    const appWalletBalance = await bettingContract.usersBalance(account);
-    setAppWalletBalance(formatUnits(appWalletBalance, 8));
+    try {
+      const appWalletBalance = await bettingContract.usersBalance(account);
+      setAppWalletBalance(formatUnits(appWalletBalance, 8));
+    } catch (e) {
+      
+    }
   }
 
   const fetchGamesList = async () => {
-    const games = await bettingContract.bets(1);
-    console.log(games, 'games =----------->')
+    try {
+      const games = await bettingContract.getAllGames();
+      setGamesList(games);
+    } catch (e) {
+      console.log(e)
+    }
+    // console.log(games, 'games =----------->')
   }
 
   return {
     appWalletBalance: appWalletBalance,
+    gamesList: gamesList,
     fetchAppWalletBalance: fetchAppWalletBalance,
     fetchGamesList: fetchGamesList
   }

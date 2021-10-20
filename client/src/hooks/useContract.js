@@ -13,5 +13,5 @@ export function useContract(contractAddress, ABI) {
 
   return useMemo(() => {
     return new Contract(contractAddress, ABI, signerOrProvider);
-  }, [contractAddress, ABI, signerOrProvider]);
+  }, [contractAddress, ABI, signerOrProvider, account]);
 }

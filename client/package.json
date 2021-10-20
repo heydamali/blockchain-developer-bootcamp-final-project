@@ -25,6 +25,9 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -44,5 +47,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.26.1",
+    "prettier": "^2.4.1"
   }
 }

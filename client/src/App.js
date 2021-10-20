@@ -1,17 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route} from "react-router-dom"
-import {Web3ReactProvider} from '@web3-react/core'
-import {ethers} from 'ethers'
-import {AppContextProvider} from './AppContext'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Web3ReactProvider } from '@web3-react/core';
+import { ethers } from 'ethers';
+import { AppContextProvider } from './AppContext';
 import WalletInfo from './components/WalletInfo';
 import HistoryList from './components/History';
 import GamesList from './components/GamesList';
-import Game from './components/Game';
+import PlaceBet from './components/PlaceBet';
 
 import './App.css';
 
 function getLibrary(provider) {
-  return new ethers.providers.Web3Provider(provider)
+  return new ethers.providers.Web3Provider(provider);
 }
 
 function App() {
@@ -25,8 +25,8 @@ function App() {
               <Route path="/" exact="true">
                 <GamesList />
               </Route>
-              <Route path="/games/1" >
-                <Game />
+              <Route path="/new-bet">
+                <PlaceBet />
               </Route>
               <Route path="/history">
                 <HistoryList />
@@ -36,7 +36,6 @@ function App() {
         </Router>
       </Web3ReactProvider>
     </AppContextProvider>
-
   );
 }
 

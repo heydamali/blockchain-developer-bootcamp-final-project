@@ -1,6 +1,6 @@
-import React from 'react'
-import WalletBalanceCard from './WalletBalanceCard'
-import WalletConnectionCard from './WalletConnectionCard'
+import React from 'react';
+import WalletBalanceCard from './WalletBalanceCard';
+import WalletConnectionCard from './WalletConnectionCard';
 
 const WalletInfo = () => {
   return (
@@ -8,7 +8,7 @@ const WalletInfo = () => {
       <WalletBalanceCard />
       <WalletConnectionCard />
     </section>
-  )
-}
+  );
+};
 
 export default WalletInfo;
