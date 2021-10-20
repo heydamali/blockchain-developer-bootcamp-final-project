@@ -1,10 +1,10 @@
 import React, { createContext, useReducer } from 'react';
 
 const initialContext = {
-  walletBalance: '--',
-  setWalletBalance: () => {},
-  appBalance: '--',
-  setAppBalance: () => {},
+  metaMaskWalletBalance: '--',
+  setMetaMaskWalletBalance: () => {},
+  appWalletBalance: '--',
+  setAppWalletBalance: () => {},
   isWalletConnectionModalOpen: false,
   setWalletConnectModal: () => {},
   txnStatus: 'NOT_SUBMITTED',
@@ -13,16 +13,16 @@ const initialContext = {
 
 const appReducer = (state, { type, payload }) => {
   switch (type) {
-    case 'SET_WALLET_BALANCE':
+    case 'SET_META_MASK_WALLET_BALANCE':
       return {
         ...state,
-        walletBalance: payload,
+        metaMaskWalletBalance: payload,
       };
   
-    case 'SET_APP_BALANCE':
+    case 'SET_APP_WALLET_BALANCE':
       return {
         ...state,
-        appBalance: payload,
+        appWalletBalance: payload,
       };
 
     case 'SET_WALLET_MODAL':
@@ -47,13 +47,13 @@ export const AppContextProvider = ({ children }) => {
   const [store, dispatch] = useReducer(appReducer, initialContext);
 
   const contextValue = {
-    walletBalance: store.walletBalance,
-    setWalletBalance: (balance) => {
-      dispatch({ type: 'SET_WALLET_BALANCE', payload: balance });
+    metaMaskWalletBalance: store.metaMaskWalletBalance,
+    setMetaMaskWalletBalance: (balance) => {
+      dispatch({ type: 'SET_META_MASK_WALLET_BALANCE', payload: balance });
     },
-    appBalance: store.appBalance,
-    setAppBalance: (balance) => {
-      dispatch({ type: 'SET_APP_BALANCE', payload: balance });
+    appWalletBalance: store.appWalletBalance,
+    setAppWalletBalance: (balance) => {
+      dispatch({ type: 'SET_APP_WALLET_BALANCE', payload: balance });
     },
     isWalletConnectModalOpen: store.isWalletConnectModalOpen,
     setWalletConnectModal: (open) => {

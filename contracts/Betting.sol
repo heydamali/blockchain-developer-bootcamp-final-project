@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.0 <0.9.0;
+pragma experimental ABIEncoderV2;
 
 library SafeMath {
     /**
@@ -144,9 +145,15 @@ library SafeMath {
     }
 }
 
+// TODOs
+// Anotate functions with comments
+// USE Open zieppelin as much as possible
+// USE pausable contract
+// CHECK for possible re-enterecy pitfalls
+
 contract Betting {
   using SafeMath for uint256;
-  struct Bet {
+  struct Game {
     string teamA;
     string teamB;
     string winner;
@@ -166,15 +173,15 @@ contract Betting {
 
   address private owner;
   uint256 private appBalance;
-  uint256 public betId;
+  uint256 public gameId;
   mapping (address => bool) public users;
   mapping (address => uint256) public usersBalance;
-  mapping (uint256 => Bet) public bets;
+  mapping (uint256 => Game) public games;
   mapping (address => mapping (uint256 => Stake)) public usersStakings;
 
   constructor() {
     owner = msg.sender;
-    betId = 1;
+    gameId = 1;
     appBalance = 0;
   }
 
@@ -193,7 +200,7 @@ contract Betting {
     _;
   }
 
-  function registerUser(address payable _address) public returns (bool) { // Register new user
+  function registerUser(address payable _address) external returns (bool) { // Register new user
     require(_address != owner, "Owner can not be registered");
 
     users[_address] = true;
@@ -203,14 +210,12 @@ contract Betting {
     return true;
   }
 
-  function addFunds() external payable isRegistered returns (uint256) { // Fund user in app wallet
+  function addFunds() external payable isRegistered { // Fund user in app wallet
     usersBalance[msg.sender] += msg.value;
-
     emit LogAddFunds(msg.sender, msg.value);
-    return msg.value;
   }
 
-  function withdrawFunds(address payable _to, uint256 _amount) public payable isRegistered checkAmount(_amount) returns (uint256) { // Withdraw funds to external wallet
+  function withdrawFunds(address payable _to, uint256 _amount) external payable isRegistered checkAmount(_amount) returns (uint256) { // Withdraw funds to external wallet
     usersBalance[msg.sender] -= _amount;
     (bool success, ) = _to.call{value: _amount}("");
     require(success, "Withdrawal failed");
@@ -218,36 +223,43 @@ contract Betting {
     return _amount;
   }
 
-  function addBet(string memory teamA, string memory teamB, uint256 startTime, uint256 endTime) public isOwner {
-    Bet memory newBet = Bet({
-      teamA: teamA,
-      teamB: teamB,
-      winner: "",
-      totalAmountStaked: 0,
-      usersCount: 0,
-      startTime: startTime,
-      endTime: endTime,
-      isOpen: true
-    });
+  function addGame(string memory teamA, string memory teamB, uint256 startTime, uint256 endTime) external isOwner {
+    Game memory game;
+      game.teamA = teamA;
+      game.teamB = teamB;
+      game.winner = "";
+      game.totalAmountStaked = 0;
+      game.usersCount = 0;
+      game.startTime = startTime;
+      game.endTime = endTime;
+      game.isOpen = true;
 
-    bets[betId] = newBet;
-    betId += 1;
-
-    emit LogAddBet(teamA, teamB, startTime, endTime);
+    games[gameId] = game;
+    gameId += 1;
+    emit LogAddGame(teamA, teamB, startTime, endTime);
   }
 
-  function closeBet(uint256 _betId) public isOwner {
-    require(bets[_betId].isOpen == true, "This bet is already closed");
-    bets[_betId].isOpen = false;
-    emit LogCloseBet(_betId);
+  function closeGame(uint256 _gameId) external isOwner {
+    require(games[_gameId].isOpen == true, "This game is already closed");
+    games[_gameId].isOpen = false;
+    emit LogCloseGame(_gameId);
   }
 
-  function submitBet(uint256 _betId, string memory _teamToWin, uint256 _betStakeAmount) public isRegistered checkAmount(_betStakeAmount) { // Register a bet with money from app wallet
-    require(bets[_betId].isOpen == true, "This bet is no longer accepting stakes");
+  function getAllGames() external view returns (Game[] memory) {
+    uint256 resultLength = gameId - 1;
+    Game[] memory result = new Game[](resultLength);
+    for(uint256 i = 0; i < resultLength; i++) {
+      result[i] = games[i + 1];
+    }
+    return result;
+  }
+
+  function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isRegistered checkAmount(_betStakeAmount) { // Register a bet with money from app wallet
+    require(games[_gameId].isOpen == true, "This game is no longer accepting stakes");
     require(_betStakeAmount > 0, "Bet stake amount must be greater than 0");
     address user = msg.sender;
     bytes32 teamToWinHash = keccak256(abi.encodePacked(_teamToWin));
-    Stake storage userStaking = usersStakings[user][_betId];
+    Stake storage userStaking = usersStakings[user][_gameId];
 
     // User might be staking this bet for the first time or increasing thier initial stake
     if(userStaking.totalAmountStaked == 0) {
@@ -256,34 +268,33 @@ contract Betting {
       stake.teamToWinHash = teamToWinHash;
       stake.totalAmountStaked =  _betStakeAmount;
 
-      usersStakings[user][_betId] = stake;
-      bets[_betId].usersCount = bets[_betId].usersCount.add(1);
+      usersStakings[user][_gameId] = stake;
+      games[_gameId].usersCount = games[_gameId].usersCount.add(1);
     } else {
-      require(userStaking.teamToWinHash == teamToWinHash, "You're not allowed to stake on both sides of a bet");
+      require(userStaking.teamToWinHash == teamToWinHash, "You're not allowed to stake on both sides of a game");
       userStaking.totalAmountStaked = userStaking.totalAmountStaked.add(_betStakeAmount);
     }
 
     usersBalance[user] = usersBalance[user].sub(_betStakeAmount);
-    bets[_betId].totalAmountStaked = bets[_betId].totalAmountStaked.add(_betStakeAmount);
+    games[_gameId].totalAmountStaked = games[_gameId].totalAmountStaked.add(_betStakeAmount);
     appBalance = appBalance.add(_betStakeAmount);
 
-    // Compute user's stake percentage WRT total stake on this bet
+    // Compute user's stake percentage WRT total stake on this game
     uint256 userTotalAmountStaked = userStaking.totalAmountStaked;
-    uint256 stakePercentage = userTotalAmountStaked.div(bets[_betId].totalAmountStaked).mul(100);
+    uint256 stakePercentage = userTotalAmountStaked.div(games[_gameId].totalAmountStaked).mul(100);
     userStaking.stakePercentage = stakePercentage;
-
-    emit LogSubmitBet(msg.sender, _betId, _teamToWin, _betStakeAmount, appBalance);
+    emit LogSubmitBet(msg.sender, _gameId, _teamToWin, _betStakeAmount, appBalance);
   }
 
-  function settleBet(uint256 _betId, string memory _winner) public isOwner {
-    require(bets[_betId].isOpen == false, "Can not settle an open bet");
-    require(bytes(bets[_betId].winner).length == 0, "This bet has already been settled");
+  function updateGameWinner(uint256 _gameId, string memory _winner) external isOwner {
+    require(games[_gameId].isOpen == false, "Can not update winner of an open game");
+    require(bytes(games[_gameId].winner).length == 0, "This game already has a winner");
 
-    bets[_betId].winner = _winner;
-    emit LogSettleBet(_betId, _winner);
+    games[_gameId].winner = _winner;
+    emit LogUpdateGameWinner(_gameId, _winner);
   }
 
-  function disburseBetFunds(uint256 _betId) private isOwner returns (bool) {
+  function disburseBetFunds(uint256 _gameId) external isOwner returns (bool) {
 
   }
 
@@ -291,10 +302,10 @@ contract Betting {
   event LogRegisterUser(address payable indexed _address);
   event LogAddFunds(address indexed _sender, uint256 _amount);
   event LogWithdrawFunds(address indexed _to, uint256 _amount);
-  event LogAddBet(string _teamA, string _teamB, uint256 indexed _startTime, uint256 indexed _endTime);
-  event LogSubmitBet(address indexed _user, uint256 indexed _betId, string _sideToWin, uint256 _betStakeAmount, uint256 _appBalance);
-  event LogSettleBet(uint256 indexed _betId, string _winner);
-  event LogDisburseBetFunds(uint256 indexed _betId);
-  event LogCloseBet(uint256 indexed _betId);
+  event LogAddGame(string _teamA, string _teamB, uint256 indexed _startTime, uint256 indexed _endTime);
+  event LogSubmitBet(address indexed _user, uint256 indexed _gameId, string _sideToWin, uint256 _betStakeAmount, uint256 _appBalance);
+  event LogUpdateGameWinner(uint256 indexed _gameId, string _winner);
+  event LogDisburseBetFunds(uint256 indexed _gameId);
+  event LogCloseGame(uint256 indexed _gameId);
   
 }

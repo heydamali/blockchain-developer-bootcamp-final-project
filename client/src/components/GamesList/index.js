@@ -1,7 +1,14 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import {Link} from "react-router-dom"
+import useBetting from '../../hooks/useBetting'
 
 const GamesList = () => {
+  const {fetchGamesList} = useBetting();
+  
+  useEffect(() => {
+    fetchGamesList();
+  }, [])
+
   return (
     <section className="pt-10">
       <p className="text-right text-blue-500 hover:text-blue-600 mb-5"><Link to="/history">History</Link></p>
