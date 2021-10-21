@@ -1,6 +1,6 @@
 import { useWeb3React } from '@web3-react/core';
 import { formatEther } from '@ethersproject/units';
-import {useAppContext} from '../AppContext';
+import { useAppContext } from '../AppContext';
 
 const useWallet = () => {
   const { active, library, account } = useWeb3React();
@@ -14,7 +14,12 @@ const useWallet = () => {
       setMetaMaskWalletBalance('--');
     }
   };
-  return { metaMaskWalletBalance, fetchMetaMaskWalletBalance };
+
+  return {
+    metaMaskWalletBalance,
+    active,
+    fetchMetaMaskWalletBalance
+  };
 };
 
 export default useWallet;

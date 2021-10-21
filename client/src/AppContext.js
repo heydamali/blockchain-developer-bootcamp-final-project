@@ -10,7 +10,7 @@ const initialContext = {
   isWalletConnectionModalOpen: false,
   setWalletConnectModal: () => {},
   txnStatus: 'NOT_SUBMITTED',
-  setTxnStatus: () => {},
+  setTxnStatus: () => {}
 };
 
 const appReducer = (state, { type, payload }) => {
@@ -20,29 +20,29 @@ const appReducer = (state, { type, payload }) => {
         ...state,
         metaMaskWalletBalance: payload
       };
-  
+
     case 'SET_APP_WALLET_BALANCE':
       return {
         ...state,
         appWalletBalance: payload
       };
-    
+
     case 'SET_GAMES_LIST':
       return {
         ...state,
         gamesList: payload
-      }
+      };
 
     case 'SET_WALLET_MODAL':
       return {
         ...state,
-        isWalletConnectModalOpen: payload,
+        isWalletConnectModalOpen: payload
       };
 
     case 'SET_TXN_STATUS':
       return {
         ...state,
-        txnStatus: payload,
+        txnStatus: payload
       };
     default:
       return state;
@@ -51,6 +51,7 @@ const appReducer = (state, { type, payload }) => {
 
 const AppContext = createContext(initialContext);
 export const useAppContext = () => React.useContext(AppContext);
+/* eslint react/prop-types: 0 */
 export const AppContextProvider = ({ children }) => {
   const [store, dispatch] = useReducer(appReducer, initialContext);
 
@@ -65,7 +66,7 @@ export const AppContextProvider = ({ children }) => {
     },
     gamesList: store.gamesList,
     setGamesList: (games) => {
-      dispatch({type: 'SET_GAMES_LIST', payload: games })
+      dispatch({ type: 'SET_GAMES_LIST', payload: games });
     },
     isWalletConnectModalOpen: store.isWalletConnectModalOpen,
     setWalletConnectModal: (open) => {
@@ -74,7 +75,7 @@ export const AppContextProvider = ({ children }) => {
     txnStatus: store.txnStatus,
     setTxnStatus: (status) => {
       dispatch({ type: 'SET_TXN_STATUS', payload: status });
-    },
+    }
   };
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

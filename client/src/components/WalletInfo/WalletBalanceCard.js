@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import useWallet from '../../hooks/useWallet';
 import useBetting from '../../hooks/useBetting';
 
 const WalletBalanceCard = () => {
-  const { account, chainId } = useWeb3React();
   const { metaMaskWalletBalance, fetchMetaMaskWalletBalance } = useWallet();
   const { appWalletBalance, fetchAppWalletBalance } = useBetting();
+  const { account, chainId } = useWeb3React();
 
   useEffect(() => {
     if (account) {

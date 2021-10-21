@@ -5,7 +5,7 @@ const BigNumber = require('bignumber.js');
 // TODO: Add linter and prettier
 // TODO: Add test for CloseGame
 
-contract("User registration", async accounts => {
+contract("User sign in", async accounts => {
 
   let betting;
   const ownerAccount = accounts[0];
@@ -15,21 +15,22 @@ contract("User registration", async accounts => {
     betting = await BettingContract.new({from: ownerAccount});
   })
 
-  it("should fail to register owner", async () => {
+  it("should fail to sign in owner", async () => {
     await truffleAssert.reverts(
-      betting.registerUser(ownerAccount),
+      betting.signInUser(ownerAccount),
       "Owner can not be registered"
     )
   });
 
-  it("should successfully register user", async () => {
-    const success = await betting.registerUser.call(userAccount);
-    assert.equal(success, true);
+  it("should successfully sign in user", async () => {
+    await betting.signInUser(userAccount);
+    const isSignedIn = await betting.users(userAccount);
+    assert.equal(isSignedIn, true);
   });
 
-  it("should emit LogRegisterUser event", async () => {
-    const tx = await betting.registerUser(userAccount);
-    truffleAssert.eventEmitted(tx, 'LogRegisterUser', (ev) => {
+  it("should emit LogSignInUser event", async () => {
+    const tx = await betting.signInUser(userAccount);
+    truffleAssert.eventEmitted(tx, 'LogSignInUser', (ev) => {
       return ev._address === userAccount
     })
   })
@@ -55,21 +56,21 @@ contract("Add Funds", async accounts => {
   });
 
   it("should successfully add funds to user wallet", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: amount});
     const userBalance = await betting.usersBalance(userAccount);
     assert.equal(userBalance.toString(), amount);
   })
 
   it("should successfully transfer ether to smart contract address", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: amount});
     const contractBalance = await web3.eth.getBalance(betting.address);
     assert.equal(contractBalance, amount);
   })
 
   it("should emit LogAddFunds event", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     const tx = await betting.addFunds({from: userAccount, value: amount});
     truffleAssert.eventEmitted(tx, 'LogAddFunds', (ev) => {
       return ev._sender === userAccount && ev._amount.toString() == amount
@@ -99,7 +100,7 @@ contract("Withdraw Funds", async accounts => {
   });
 
   it("should fail if user balance is less than withdraw amount", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await truffleAssert.reverts(
       betting.withdrawFunds(receiverAccount, largeWithdrawAmount, { from: userAccount }),
@@ -108,7 +109,7 @@ contract("Withdraw Funds", async accounts => {
   });
 
   it("should successfully withdraw fund from user app wallet", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.withdrawFunds(receiverAccount, smallWithdrawAmount, {from: userAccount});
     const userBalance = await betting.usersBalance(userAccount);
@@ -117,7 +118,7 @@ contract("Withdraw Funds", async accounts => {
   })
 
   it("should successfully withdraw fund from the smart contract address", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.withdrawFunds(receiverAccount, smallWithdrawAmount, {from: userAccount});
     const smartContractBalance = await web3.eth.getBalance(betting.address);
@@ -127,7 +128,7 @@ contract("Withdraw Funds", async accounts => {
 
   it("should successfully withdraw fund into the receiver's account", async () => {
     const receiverPrevBalance = await web3.eth.getBalance(receiverAccount);
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.withdrawFunds(receiverAccount, smallWithdrawAmount, {from: userAccount});
     const receiverBalance = await web3.eth.getBalance(receiverAccount);
@@ -136,7 +137,7 @@ contract("Withdraw Funds", async accounts => {
   })
 
   it("should emit LogWithdrawFunds event", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     const tx = await betting.withdrawFunds(receiverAccount, smallWithdrawAmount, {from: userAccount});
     truffleAssert.eventEmitted(tx, 'LogWithdrawFunds', (ev) => {
@@ -241,7 +242,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should fail if user balance is less than bet stake amount", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await truffleAssert.reverts(
       betting.submitBet(gameId, teamToWin, largeBetStakeAmount, { from: userAccount }),
@@ -250,7 +251,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should not allow staking on closed games", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await betting.closeGame(gameId, { from: ownerAccount });
@@ -261,7 +262,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should not allow for invalid (less than 0) bet stake amount", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await truffleAssert.reverts(
@@ -271,7 +272,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should successfully submit a new bet stake", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});
@@ -291,7 +292,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should successfully increase totalAmountStaked on a existing bet stake", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});
@@ -324,7 +325,7 @@ contract("Submit Bet", async accounts => {
   });
 
   it("should emit LogSubmitBet event", async () => {
-    await betting.registerUser(userAccount);
+    await betting.signInUser(userAccount);
     await betting.addFunds({from: userAccount, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     const tx = await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});

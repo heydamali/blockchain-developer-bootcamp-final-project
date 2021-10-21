@@ -190,7 +190,7 @@ contract Betting {
     _;
   }
 
-  modifier isRegistered {
+  modifier isSignedIn {
     require(users[msg.sender] == true, "User not registered");
     _;
   }
@@ -200,22 +200,22 @@ contract Betting {
     _;
   }
 
-  function registerUser(address payable _address) external returns (bool) { // Register new user
+  function signInUser(address payable _address) external {
     require(_address != owner, "Owner can not be registered");
+    if(!users[_address] == true) {
+      users[_address] = true;
+      usersBalance[_address] = 0;
 
-    users[_address] = true;
-    usersBalance[_address] = 0;
-
-    emit LogRegisterUser(_address);
-    return true;
+      emit LogSignInUser(_address);
+    }
   }
 
-  function addFunds() external payable isRegistered { // Fund user in app wallet
+  function addFunds() external payable isSignedIn { // Fund user in app wallet
     usersBalance[msg.sender] += msg.value;
     emit LogAddFunds(msg.sender, msg.value);
   }
 
-  function withdrawFunds(address payable _to, uint256 _amount) external payable isRegistered checkAmount(_amount) returns (uint256) { // Withdraw funds to external wallet
+  function withdrawFunds(address payable _to, uint256 _amount) external payable isSignedIn checkAmount(_amount) returns (uint256) { // Withdraw funds to external wallet
     usersBalance[msg.sender] -= _amount;
     (bool success, ) = _to.call{value: _amount}("");
     require(success, "Withdrawal failed");
@@ -254,7 +254,7 @@ contract Betting {
     return result;
   }
 
-  function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isRegistered checkAmount(_betStakeAmount) { // Register a bet with money from app wallet
+  function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isSignedIn checkAmount(_betStakeAmount) { // Register a bet with money from app wallet
     require(games[_gameId].isOpen == true, "This game is no longer accepting stakes");
     require(_betStakeAmount > 0, "Bet stake amount must be greater than 0");
     address user = msg.sender;
@@ -299,7 +299,7 @@ contract Betting {
   }
 
   // Events
-  event LogRegisterUser(address payable indexed _address);
+  event LogSignInUser(address payable indexed _address);
   event LogAddFunds(address indexed _sender, uint256 _amount);
   event LogWithdrawFunds(address indexed _to, uint256 _amount);
   event LogAddGame(string _teamA, string _teamB, uint256 indexed _startTime, uint256 indexed _endTime);

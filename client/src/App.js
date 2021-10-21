@@ -7,6 +7,7 @@ import WalletInfo from './components/WalletInfo';
 import HistoryList from './components/History';
 import GamesList from './components/GamesList';
 import PlaceBet from './components/PlaceBet';
+import AddGame from './components/AddGame';
 
 import './App.css';
 
@@ -30,6 +31,9 @@ function App() {
               </Route>
               <Route path="/history">
                 <HistoryList />
+              </Route>
+              <Route path="/new-game">
+                <AddGame />
               </Route>
             </Switch>
           </div>

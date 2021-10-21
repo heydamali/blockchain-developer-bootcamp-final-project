@@ -1,18 +1,17 @@
-import React from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { ReactComponent as MetaMaskLogo } from '../../static/metamask-logo.svg';
 import { shortenAddress } from '../../utils/shortenAddress';
 import { injected } from '../../connectors';
 
 const WalletConnectionCard = () => {
-  const { activate, active, account, deactivate } = useWeb3React();
+  const { activate, deactivate, account, active } = useWeb3React();
 
   if (active) {
     return (
       <div className="flex flex-col justify-around items-center border-2 border-black rounded p-2 text-center">
         <span className="flex m-0 pb-1">
           <MetaMaskLogo className="h-4 mt-1" />
-          {shortenAddress(account || '0xb224122c67D2Ed509ce7C91ab560D4052B14c74E', 5)}
+          {shortenAddress(account, 5)}
         </span>
         <button
           onClick={deactivate}
@@ -23,6 +22,7 @@ const WalletConnectionCard = () => {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col justify-around items-center border-2 border-black rounded p-2 text-center">
       <span className="flex m-0 pb-1">

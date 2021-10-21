@@ -1,4 +1,3 @@
-import React from 'react';
 import WalletBalanceCard from './WalletBalanceCard';
 import WalletConnectionCard from './WalletConnectionCard';
 
