@@ -2,30 +2,53 @@ import { useWeb3React } from '@web3-react/core';
 import Betting from '../contracts/Betting.json';
 import { useAppContext } from '../AppContext';
 import { useContract } from './useContract';
-import { formatUnits } from '@ethersproject/units';
+import { useLocalStorage } from './useLocalStorage';
+import { formatEther, parseEther } from '@ethersproject/units';
 
 const useBetting = () => {
   const { account } = useWeb3React();
-  const bettingContractAddress = '0xC0577145181781A77Ee611f864c8F6480A31A2DC'; // Ganache
+  const { getItem } = useLocalStorage();
+  const bettingContractAddress = '0x34668a51e1aa3c3cda40d9995186453E37EDfa20'; // Ganache
   const bettingContract = useContract(bettingContractAddress, Betting.abi);
-  const { appWalletBalance, gamesList, setAppWalletBalance, setGamesList } = useAppContext();
+  const {
+    appWalletBalance,
+    gamesList,
+    signInStatus,
+    isOwner,
+    setAppWalletBalance,
+    setGamesList,
+    setSignInStatus,
+    setIsOwner
+  } = useAppContext();
+
+  const fetchIsOwner = async () => {
+    try {
+      const ownerAccount = await bettingContract.owner();
+      const checkIsOwner = account === ownerAccount;
+      console.log(checkIsOwner, 'Fetched is owner from contract');
+      setIsOwner(checkIsOwner);
+    } catch (e) {
+      console.log(e, 'Error fetching isOwner');
+    }
+  };
 
   const fetchAppWalletBalance = async () => {
     try {
       const appWalletBalance = await bettingContract.usersBalance(account);
-      setAppWalletBalance(formatUnits(appWalletBalance, 8));
+      console.log(appWalletBalance + ' Wei', 'Fetched app balance from contract');
+      setAppWalletBalance(parseFloat(formatEther(appWalletBalance)).toPrecision(4));
     } catch (e) {
-      console.log(e);
+      console.log(e, 'Error fetching app wallet balance');
     }
   };
 
   const fetchGamesList = async () => {
     try {
       const games = await bettingContract.getAllGames();
-      const newGames = formatGames(games);
+      const newGames = _formatGames(games);
       setGamesList(newGames);
     } catch (e) {
-      console.log(e);
+      console.log(e, 'Error fetching games list');
     }
   };
 
@@ -36,33 +59,82 @@ const useBetting = () => {
 
       await bettingContract.addGame(teamA, teamB, startTimeBN, endTimeBN);
       const games = await bettingContract.getAllGames();
-      const newGames = formatGames(games);
+      const newGames = _formatGames(games);
       setGamesList(newGames);
     } catch (e) {
-      console.log(e);
+      console.log(e, 'Error adding game');
     }
   };
 
-  const signInUser = async (account) => {
+  const signInUser = async () => {
     try {
       await bettingContract.signInUser(account);
+      bettingContract.on('LogSignInUser', async () => {
+        const status = await _getAndStoreSignInStatus(bettingContract, account);
+        setSignInStatus(status);
+      });
     } catch (e) {
-      console.log(e);
+      console.log(e, 'Error signing in user');
+    }
+  };
+
+  const fetchSignInStatus = async () => {
+    try {
+      let status;
+      const signInPayload = JSON.parse(getItem('signInPayload'));
+      if (
+        account &&
+        signInPayload &&
+        Object.keys(signInPayload).length &&
+        account === signInPayload.account
+      ) {
+        status = signInPayload.status;
+      }
+
+      if (!status) status = await _getAndStoreSignInStatus(bettingContract, account);
+      setSignInStatus(status);
+    } catch (e) {
+      console.log(e, 'Error fetching sign in status');
+    }
+  };
+
+  const addFunds = async (amount) => {
+    try {
+      const wei = parseEther(amount);
+      await bettingContract.addFunds({ value: wei });
+      bettingContract.on('LogAddFunds', (_, __, userBalance) => {
+        setAppWalletBalance(parseFloat(formatEther(userBalance)).toPrecision(4));
+      });
+    } catch (e) {
+      console.log(e, 'Error adding funds');
     }
   };
 
   return {
     appWalletBalance: appWalletBalance,
     gamesList: gamesList,
+    signInStatus: signInStatus,
+    isOwner: isOwner,
     fetchAppWalletBalance: fetchAppWalletBalance,
     fetchGamesList: fetchGamesList,
     addGame: addGame,
-    signInUser: signInUser
+    signInUser: signInUser,
+    fetchSignInStatus: fetchSignInStatus,
+    addFunds: addFunds,
+    fetchIsOwner: fetchIsOwner
   };
 };
 
 // Helpers
-const formatGames = (games) => {
+const _getAndStoreSignInStatus = async (contract, account) => {
+  const status = await contract.signInStatus(account);
+  console.log(status, 'Fetched signin status from contract');
+  const payload = JSON.stringify({ account: account, status: status });
+  localStorage.setItem('signInPayload', payload);
+
+  return status;
+};
+const _formatGames = (games) => {
   const result = games.map((game) => {
     return {
       teamA: game.teamA,

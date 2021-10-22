@@ -13,12 +13,12 @@ const WalletBalanceCard = () => {
       fetchMetaMaskWalletBalance();
       fetchAppWalletBalance();
     }
-  }, [account, chainId]);
+  }, [account, chainId, appWalletBalance, metaMaskWalletBalance]);
 
   return (
     <div className="flex flex-col justify-around border-2 border-black rounded p-2">
-      <p className="m-0 pb-1">MetaMask Wallet Balance: {metaMaskWalletBalance}</p>
-      <p className="m-0">App Wallet Balance: {appWalletBalance}</p>
+      <p className="m-0 pb-1">MetaMask Wallet Balance: {metaMaskWalletBalance} ETH</p>
+      <p className="m-0">App Wallet Balance: {appWalletBalance} ETH</p>
     </div>
   );
 };

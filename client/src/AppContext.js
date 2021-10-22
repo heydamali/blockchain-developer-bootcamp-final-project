@@ -1,6 +1,10 @@
 import React, { createContext, useReducer } from 'react';
 
 const initialContext = {
+  isOwner: false,
+  setIsOwner: () => {},
+  signInStatus: false,
+  setSignInStatus: () => {},
   metaMaskWalletBalance: '--',
   setMetaMaskWalletBalance: () => {},
   appWalletBalance: '--',
@@ -15,6 +19,18 @@ const initialContext = {
 
 const appReducer = (state, { type, payload }) => {
   switch (type) {
+    case 'SET_IS_OWNER':
+      return {
+        ...state,
+        isOwner: payload
+      };
+
+    case 'SET_SIGN_IN_STATUS':
+      return {
+        ...state,
+        signInStatus: payload
+      };
+
     case 'SET_META_MASK_WALLET_BALANCE':
       return {
         ...state,
@@ -56,6 +72,14 @@ export const AppContextProvider = ({ children }) => {
   const [store, dispatch] = useReducer(appReducer, initialContext);
 
   const contextValue = {
+    isOwner: store.isOwner,
+    setIsOwner: (isOwner) => {
+      dispatch({ type: 'SET_IS_OWNER', payload: isOwner });
+    },
+    signInStatus: store.signInStatus,
+    setSignInStatus: (status) => {
+      dispatch({ type: 'SET_SIGN_IN_STATUS', payload: status });
+    },
     metaMaskWalletBalance: store.metaMaskWalletBalance,
     setMetaMaskWalletBalance: (balance) => {
       dispatch({ type: 'SET_META_MASK_WALLET_BALANCE', payload: balance });

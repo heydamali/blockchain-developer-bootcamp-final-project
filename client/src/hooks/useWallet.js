@@ -9,6 +9,10 @@ const useWallet = () => {
   const fetchMetaMaskWalletBalance = async () => {
     if (library && active && account) {
       const balance = await library.getBalance(account);
+      console.log(
+        balance.toString() + ' Wei',
+        'Fetched MetaMask wallet balance from MetaMask wallet'
+      );
       setMetaMaskWalletBalance(parseFloat(formatEther(balance)).toPrecision(4));
     } else {
       setMetaMaskWalletBalance('--');

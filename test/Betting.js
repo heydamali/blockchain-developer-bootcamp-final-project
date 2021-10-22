@@ -37,6 +37,29 @@ contract("User sign in", async accounts => {
 })
 
 
+contract("User sign in status", async accounts => {
+
+  let betting;
+  const ownerAccount = accounts[0];
+  const userAccount = accounts[1];
+
+  beforeEach(async () => {
+    betting = await BettingContract.new({from: ownerAccount});
+  })
+
+  it("should return false sign in status", async () => {
+    const status = await betting.signInStatus(ownerAccount);
+    assert.equal(status, false);
+  });
+
+  it("should return true sign in status", async () => {
+    await betting.signInUser(userAccount);
+    const status = await betting.signInStatus(userAccount);
+    assert.equal(status, true);
+  });
+})
+
+
 contract("Add Funds", async accounts => {
 
   let betting;
@@ -72,8 +95,9 @@ contract("Add Funds", async accounts => {
   it("should emit LogAddFunds event", async () => {
     await betting.signInUser(userAccount);
     const tx = await betting.addFunds({from: userAccount, value: amount});
+    const userBalance = await betting.usersBalance(userAccount);
     truffleAssert.eventEmitted(tx, 'LogAddFunds', (ev) => {
-      return ev._sender === userAccount && ev._amount.toString() == amount
+      return ev._sender === userAccount && ev._amount.toString() == amount && ev._userBalance.toString() == userBalance
     })
   })
 })

@@ -171,7 +171,7 @@ contract Betting {
     uint256 stakePercentage;
   }
 
-  address private owner;
+  address public owner;
   uint256 private appBalance;
   uint256 public gameId;
   mapping (address => bool) public users;
@@ -200,7 +200,7 @@ contract Betting {
     _;
   }
 
-  function signInUser(address payable _address) external {
+  function signInUser(address _address) external {
     require(_address != owner, "Owner can not be registered");
     if(!users[_address] == true) {
       users[_address] = true;
@@ -210,9 +210,13 @@ contract Betting {
     }
   }
 
+  function signInStatus(address _address) external view returns (bool) {
+    return users[_address];
+  } 
+
   function addFunds() external payable isSignedIn { // Fund user in app wallet
     usersBalance[msg.sender] += msg.value;
-    emit LogAddFunds(msg.sender, msg.value);
+    emit LogAddFunds(msg.sender, msg.value, usersBalance[msg.sender]);
   }
 
   function withdrawFunds(address payable _to, uint256 _amount) external payable isSignedIn checkAmount(_amount) returns (uint256) { // Withdraw funds to external wallet
@@ -299,8 +303,8 @@ contract Betting {
   }
 
   // Events
-  event LogSignInUser(address payable indexed _address);
-  event LogAddFunds(address indexed _sender, uint256 _amount);
+  event LogSignInUser(address indexed _address);
+  event LogAddFunds(address indexed _sender, uint256 _amount, uint256 _userBalance);
   event LogWithdrawFunds(address indexed _to, uint256 _amount);
   event LogAddGame(string _teamA, string _teamB, uint256 indexed _startTime, uint256 indexed _endTime);
   event LogSubmitBet(address indexed _user, uint256 indexed _gameId, string _sideToWin, uint256 _betStakeAmount, uint256 _appBalance);

@@ -1,15 +1,8 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useWeb3React } from '@web3-react/core';
 import useBetting from '../../hooks/useBetting';
 
 const GamesList = () => {
-  const { account } = useWeb3React();
-  const { gamesList, fetchGamesList } = useBetting();
-
-  useEffect(() => {
-    fetchGamesList();
-  }, [account]);
+  const { gamesList } = useBetting();
 
   return (
     <section className="pt-10">
@@ -28,11 +21,11 @@ const GamesList = () => {
             </tr>
           </thead>
           <tbody>
-            {gamesList.map((game) => {
+            {gamesList.map((game, index) => {
               return (
-                <tr className="" key="key">
+                <tr className="" key={index}>
                   <td className="pt-3 text-blue-500 hover:text-blue-600 mb-5">
-                    <Link to="/new-bet">
+                    <Link to={`/new-bet/${index + 1}`}>
                       {game.teamA} vs {game.teamB}
                     </Link>
                   </td>
