@@ -11,6 +11,8 @@ const initialContext = {
   setAppWalletBalance: () => {},
   gamesList: [],
   setGamesList: () => {},
+  historyList: [],
+  setHistoryList: () => {},
   isWalletConnectionModalOpen: false,
   setWalletConnectModal: () => {},
   txnStatus: 'NOT_SUBMITTED',
@@ -47,6 +49,12 @@ const appReducer = (state, { type, payload }) => {
       return {
         ...state,
         gamesList: payload
+      };
+
+    case 'SET_HISTORY_LIST':
+      return {
+        ...state,
+        historyList: payload
       };
 
     case 'SET_WALLET_MODAL':
@@ -91,6 +99,10 @@ export const AppContextProvider = ({ children }) => {
     gamesList: store.gamesList,
     setGamesList: (games) => {
       dispatch({ type: 'SET_GAMES_LIST', payload: games });
+    },
+    historyList: store.historyList,
+    setHistoryList: (history) => {
+      dispatch({ type: 'SET_HISTORY_LIST', payload: history });
     },
     isWalletConnectModalOpen: store.isWalletConnectModalOpen,
     setWalletConnectModal: (open) => {

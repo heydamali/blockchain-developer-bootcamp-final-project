@@ -154,6 +154,7 @@ library SafeMath {
 contract Betting {
   using SafeMath for uint256;
   struct Game {
+    uint256 gameId;
     string teamA;
     string teamB;
     string winner;
@@ -168,7 +169,21 @@ contract Betting {
     string teamToWin;
     bytes32 teamToWinHash;
     uint256 totalAmountStaked;
-    uint256 stakePercentage;
+  }
+
+  struct History {
+    uint256 gameId;
+    string teamA;
+    string teamB;
+    string winner;
+    uint256 gameTotalAmountStaked;
+    uint256 usersCount;
+    uint256 startTime;
+    uint256 endTime;
+    string teamToWin;
+    bytes32 teamToWinHash;
+    uint256 userTotalAmountStaked;
+    uint256 userStakePercentage;
   }
 
   address public owner;
@@ -176,8 +191,9 @@ contract Betting {
   uint256 public gameId;
   mapping (address => bool) public users;
   mapping (address => uint256) public usersBalance;
+  mapping (address => uint256[]) public usersBetList;
   mapping (uint256 => Game) public games;
-  mapping (address => mapping (uint256 => Stake)) public usersStakings;
+  mapping (address => mapping (uint256 => Stake)) public allBets;
 
   constructor() {
     owner = msg.sender;
@@ -229,6 +245,7 @@ contract Betting {
 
   function addGame(string memory teamA, string memory teamB, uint256 startTime, uint256 endTime) external isOwner {
     Game memory game;
+      game.gameId = gameId;
       game.teamA = teamA;
       game.teamB = teamB;
       game.winner = "";
@@ -258,36 +275,64 @@ contract Betting {
     return result;
   }
 
+  function getUserBetsHistory() external view returns (History[] memory) {
+    uint256 resultLength = usersBetList[msg.sender].length;
+    History[] memory result = new History[](resultLength);
+
+    for (uint256 i = 0; i < resultLength; i++) {
+      uint256 id = usersBetList[msg.sender][i];
+      Game memory game = games[id];
+      Stake memory stake = allBets[msg.sender][id];
+      History memory history;
+
+      history.gameId = id;
+      history.teamA = game.teamA;
+      history.teamB = game.teamB;
+      history.startTime = game.startTime;
+      history.endTime = game.endTime;
+      history.gameTotalAmountStaked = game.totalAmountStaked;
+      history.usersCount = game.usersCount;
+      history.winner = game.winner;
+      history.teamToWin = stake.teamToWin;
+      history.teamToWinHash = stake.teamToWinHash;
+      history.userTotalAmountStaked = stake.totalAmountStaked;
+
+      uint256 userStakePercentage = stake.totalAmountStaked.mul(10000).div(game.totalAmountStaked).mul(100);
+      history.userStakePercentage = userStakePercentage; // will be stored as actualPercentage * 10000 e.g 12.5 would equal 125000. This is because of solidity's inablity to handle floating number properly
+
+      result[i] = history;
+    }
+
+    return result;
+  }
+
   function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isSignedIn checkAmount(_betStakeAmount) { // Register a bet with money from app wallet
     require(games[_gameId].isOpen == true, "This game is no longer accepting stakes");
     require(_betStakeAmount > 0, "Bet stake amount must be greater than 0");
     address user = msg.sender;
     bytes32 teamToWinHash = keccak256(abi.encodePacked(_teamToWin));
-    Stake storage userStaking = usersStakings[user][_gameId];
+    Stake storage bet = allBets[user][_gameId];
 
     // User might be staking this bet for the first time or increasing thier initial stake
-    if(userStaking.totalAmountStaked == 0) {
-      Stake memory stake;
-      stake.teamToWin = _teamToWin;
-      stake.teamToWinHash = teamToWinHash;
-      stake.totalAmountStaked =  _betStakeAmount;
+    if(bet.totalAmountStaked == 0) {
+      Stake memory newBet;
+      newBet.teamToWin = _teamToWin;
+      newBet.teamToWinHash = teamToWinHash;
+      newBet.totalAmountStaked =  _betStakeAmount;
 
-      usersStakings[user][_gameId] = stake;
+      usersBetList[user].push(_gameId);
+      allBets[user][_gameId] = newBet;
       games[_gameId].usersCount = games[_gameId].usersCount.add(1);
     } else {
-      require(userStaking.teamToWinHash == teamToWinHash, "You're not allowed to stake on both sides of a game");
-      userStaking.totalAmountStaked = userStaking.totalAmountStaked.add(_betStakeAmount);
+      require(bet.teamToWinHash == teamToWinHash, "You're not allowed to stake on both sides of a game");
+      bet.totalAmountStaked = bet.totalAmountStaked.add(_betStakeAmount);
     }
 
     usersBalance[user] = usersBalance[user].sub(_betStakeAmount);
     games[_gameId].totalAmountStaked = games[_gameId].totalAmountStaked.add(_betStakeAmount);
     appBalance = appBalance.add(_betStakeAmount);
 
-    // Compute user's stake percentage WRT total stake on this game
-    uint256 userTotalAmountStaked = userStaking.totalAmountStaked;
-    uint256 stakePercentage = userTotalAmountStaked.div(games[_gameId].totalAmountStaked).mul(100);
-    userStaking.stakePercentage = stakePercentage;
-    emit LogSubmitBet(msg.sender, _gameId, _teamToWin, _betStakeAmount, appBalance);
+    emit LogSubmitBet(msg.sender, _gameId, _teamToWin, _betStakeAmount, usersBalance[msg.sender]);
   }
 
   function updateGameWinner(uint256 _gameId, string memory _winner) external isOwner {
@@ -307,7 +352,7 @@ contract Betting {
   event LogAddFunds(address indexed _sender, uint256 _amount, uint256 _userBalance);
   event LogWithdrawFunds(address indexed _to, uint256 _amount);
   event LogAddGame(string _teamA, string _teamB, uint256 indexed _startTime, uint256 indexed _endTime);
-  event LogSubmitBet(address indexed _user, uint256 indexed _gameId, string _sideToWin, uint256 _betStakeAmount, uint256 _appBalance);
+  event LogSubmitBet(address indexed _user, uint256 indexed _gameId, string _sideToWin, uint256 _betStakeAmount, uint256 _userBalance);
   event LogUpdateGameWinner(uint256 indexed _gameId, string _winner);
   event LogDisburseBetFunds(uint256 indexed _gameId);
   event LogCloseGame(uint256 indexed _gameId);

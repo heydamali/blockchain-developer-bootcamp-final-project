@@ -21,11 +21,11 @@ const GamesList = () => {
             </tr>
           </thead>
           <tbody>
-            {gamesList.map((game, index) => {
+            {gamesList.map((game) => {
               return (
-                <tr className="" key={index}>
+                <tr className="" key={game.gameId}>
                   <td className="pt-3 text-blue-500 hover:text-blue-600 mb-5">
-                    <Link to={`/new-bet/${index + 1}`}>
+                    <Link to={`/new-bet/${game.gameId}`}>
                       {game.teamA} vs {game.teamB}
                     </Link>
                   </td>

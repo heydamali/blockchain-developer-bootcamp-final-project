@@ -197,6 +197,7 @@ contract("Add Game", async accounts => {
     const newGameId = await betting.gameId();
     const expectedNewBetId = gameId + 1;
 
+    assert.equal(newGame.gameId, gameId);
     assert.equal(newGame.teamA, teamA);
     assert.equal(newGame.teamB, teamB);
     assert.equal(newGame.winner, '');
@@ -219,10 +220,8 @@ contract("Add Game", async accounts => {
 contract("Get All Games", async accounts => {
   let betting;
   const ownerAccount = accounts[0];
-  const userAccount = accounts[1];
   const teamA = 'Lakers';
   const teamB = 'OKC';
-  const gameId = 1;
   const startTime = Math.floor((new Date()).getTime() / 1000) // Express time in unix https://stackoverflow.com/questions/68709142/how-to-input-date-as-function-parameters-for-solidity-in-javascript
   const endTime = Math.floor((new Date()).getTime() / 1000) // Express time in unix https://stackoverflow.com/questions/68709142/how-to-input-date-as-function-parameters-for-solidity-in-javascript
 
@@ -238,10 +237,54 @@ contract("Get All Games", async accounts => {
   })
 })
 
-contract("Submit Bet", async accounts => {
+contract("Get user's bet history", async accounts => {
   let betting;
   const ownerAccount = accounts[0];
   const userAccount = accounts[1];
+  const fundAmount = 100;
+  const betAmount = 20;
+  const teamA = 'Lakers';
+  const teamB = 'OKC';
+  const teamToWin = 'Lakers';
+  const winner = 'Lakers';
+  const gameId = 1;
+  const startTime = Math.floor((new Date()).getTime() / 1000) // Express time in unix https://stackoverflow.com/questions/68709142/how-to-input-date-as-function-parameters-for-solidity-in-javascript
+  const endTime = Math.floor((new Date()).getTime() / 1000) // Express time in unix https://stackoverflow.com/questions/68709142/how-to-input-date-as-function-parameters-for-solidity-in-javascript
+
+  beforeEach(async () => {
+    betting = await BettingContract.new({from: ownerAccount});
+  })
+
+  it("should successfully get user's bets", async () => {
+    await betting.signInUser(userAccount);
+    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
+    await betting.addGame(teamB, teamA, startTime, endTime, {from: ownerAccount});
+    await betting.submitBet(gameId, teamToWin, betAmount, {from: userAccount});
+    await betting.submitBet(gameId + 1, teamToWin, betAmount, {from: userAccount});
+    await betting.closeGame(gameId);
+    await betting.closeGame(gameId + 1);
+    await betting.updateGameWinner(gameId, winner);
+    await betting.updateGameWinner(gameId + 1, winner);
+
+    const history = await betting.getUserBetsHistory({from: userAccount});
+
+    assert.equal(history.length, 2);
+    assert.equal(history[0].gameId, gameId)
+    assert.equal(history[0].teamA, teamA)
+    assert.equal(history[0].teamB, teamB)
+    assert.equal(history[0].winner, winner)
+    assert.equal(history[0].startTime, startTime)
+    assert.equal(history[0].endTime, endTime)
+    assert.equal(history[0].teamToWin, teamToWin)
+  })
+})
+
+contract("Submit Bet", async accounts => {
+  let betting;
+  const ownerAccount = accounts[0];
+  const userAccountOne = accounts[1];
+  const userAccountTwo = accounts[2];
   const fundAmount = 100;
   const smallBetStakeAmount = 50;
   const largeBetStakeAmount = 150;
@@ -260,102 +303,133 @@ contract("Submit Bet", async accounts => {
 
   it("should fail if user is not registered", async () => {
     await truffleAssert.reverts(
-      betting.submitBet(gameId, teamToWin, smallBetStakeAmount, { from: userAccount }),
+      betting.submitBet(gameId, teamToWin, smallBetStakeAmount, { from: userAccountOne }),
       "User not registered"
     )
   });
 
   it("should fail if user balance is less than bet stake amount", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await truffleAssert.reverts(
-      betting.submitBet(gameId, teamToWin, largeBetStakeAmount, { from: userAccount }),
+      betting.submitBet(gameId, teamToWin, largeBetStakeAmount, { from: userAccountOne }),
       "Insufficient balance"
     )
   });
 
   it("should not allow staking on closed games", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await betting.closeGame(gameId, { from: ownerAccount });
     await truffleAssert.reverts(
-      betting.submitBet(gameId, teamToWin, smallBetStakeAmount, { from: userAccount }),
+      betting.submitBet(gameId, teamToWin, smallBetStakeAmount, { from: userAccountOne }),
       "This game is no longer accepting stakes"
     )
   });
 
   it("should not allow for invalid (less than 0) bet stake amount", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
     await truffleAssert.reverts(
-      betting.submitBet(gameId, teamToWin, invalidBetStakeAmount, { from: userAccount }),
+      betting.submitBet(gameId, teamToWin, invalidBetStakeAmount, { from: userAccountOne }),
       "Bet stake amount must be greater than 0"
     )
   });
 
   it("should successfully submit a new bet stake", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
-    await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});
+    await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccountOne});
 
     const bet = await betting.games(gameId);
-    const userStaking = await betting.usersStakings(userAccount, gameId);
-    const userBalance = await betting.usersBalance(userAccount);
+    const userStaking = await betting.allBets(userAccountOne, gameId);
+    const userBalance = await betting.usersBalance(userAccountOne);
     
     const expectedUserBalance = fundAmount - smallBetStakeAmount;
-    const expectedStakePercentage = new BigNumber(userStaking.totalAmountStaked).dividedBy(bet.totalAmountStaked).times(100).toString();
 
     assert.equal(userStaking.teamToWin, teamToWin);
     assert.equal(userStaking.totalAmountStaked.toString(), smallBetStakeAmount);
-    assert.equal(userStaking.stakePercentage.toString(), expectedStakePercentage);
     assert.equal(bet.totalAmountStaked.toString(), smallBetStakeAmount);
     assert.equal(userBalance, expectedUserBalance);
   });
 
   it("should successfully increase totalAmountStaked on a existing bet stake", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
-    await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});
+    await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccountOne});
 
     // Initial bet stake results
     const {totalAmountStaked: initialBetTotalAmountStaked} = await betting.games(gameId);
-    const {totalAmountStaked: initialUserTotalAmountStaked, stakePercentage: initialStakePercentage} = await betting.usersStakings(userAccount, gameId);
-    const initialUserBalance = await betting.usersBalance(userAccount);
+    const {totalAmountStaked: initialUserTotalAmountStaked, stakePercentage: initialStakePercentage} = await betting.allBets(userAccountOne, gameId);
+    const initialUserBalance = await betting.usersBalance(userAccountOne);
     const expectedInitialUserBalance = fundAmount - smallBetStakeAmount;
-    const expectedInitialStakePercentage = new BigNumber(initialUserTotalAmountStaked).dividedBy(initialBetTotalAmountStaked).times(100).toString();
 
     // Final bet stake results
-    await betting.submitBet(gameId, teamToWin, additionalBetStakeAmount, {from: userAccount});
+    await betting.submitBet(gameId, teamToWin, additionalBetStakeAmount, {from: userAccountOne});
     const {totalAmountStaked: finalBetTotalAmountStaked} = await betting.games(gameId);
-    const {totalAmountStaked: finalUserTotalAmountStaked, stakePercentage: finalStakePercentage} = await betting.usersStakings(userAccount, gameId);
-    const finalUserBalance = await betting.usersBalance(userAccount);
-    const expectedFinalStakePercentage = new BigNumber(finalUserTotalAmountStaked).dividedBy(finalBetTotalAmountStaked).times(100).toString();
+    const {totalAmountStaked: finalUserTotalAmountStaked} = await betting.allBets(userAccountOne, gameId);
+    const finalUserBalance = await betting.usersBalance(userAccountOne);
     const expectedFinalTotalAmountStaked = smallBetStakeAmount + additionalBetStakeAmount;
     const expectedFinalUserBalance = fundAmount - expectedFinalTotalAmountStaked;
 
     assert.equal(initialUserTotalAmountStaked.toString(), smallBetStakeAmount);
-    assert.equal(initialStakePercentage.toString(), expectedInitialStakePercentage);
     assert.equal(initialBetTotalAmountStaked.toString(), smallBetStakeAmount);
     assert.equal(initialUserBalance, expectedInitialUserBalance);
 
     assert.equal(finalUserTotalAmountStaked.toString(), expectedFinalTotalAmountStaked);
-    assert.equal(finalStakePercentage.toString(), expectedFinalStakePercentage);
     assert.equal(finalBetTotalAmountStaked.toString(), expectedFinalTotalAmountStaked);
     assert.equal(finalUserBalance, expectedFinalUserBalance);
   });
 
-  it("should emit LogSubmitBet event", async () => {
-    await betting.signInUser(userAccount);
-    await betting.addFunds({from: userAccount, value: fundAmount});
+  it("should successfully submit a new bet stake", async () => {
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
     await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
-    const tx = await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccount});
+    await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccountOne});
+
+    const bet = await betting.games(gameId);
+    const userStaking = await betting.allBets(userAccountOne, gameId);
+    const userBalance = await betting.usersBalance(userAccountOne);
+    
+    const expectedUserBalance = fundAmount - smallBetStakeAmount;
+
+    assert.equal(userStaking.teamToWin, teamToWin);
+    assert.equal(userStaking.totalAmountStaked.toString(), smallBetStakeAmount);
+    assert.equal(bet.totalAmountStaked.toString(), smallBetStakeAmount);
+    assert.equal(userBalance, expectedUserBalance);
+  });
+
+  it("should successfully reflect the right percentage staking", async () => {
+    await betting.signInUser(userAccountOne);
+    await betting.signInUser(userAccountTwo);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
+    await betting.addFunds({from: userAccountTwo, value: fundAmount});
+    await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
+    await betting.submitBet(gameId, teamA, 4, {from: userAccountOne});
+    await betting.submitBet(gameId, teamB, 9, {from: userAccountTwo});
+
+    const userAccountOneBet = await betting.getUserBetsHistory({from: userAccountOne})
+    const userAccountTwoBet = await betting.getUserBetsHistory({from: userAccountTwo})
+
+    const expectedUserOneBetPercentage = '307600';
+    const expectedUserTwoBetPercentage = '692300';
+    assert.equal(userAccountOneBet[0].userStakePercentage, expectedUserOneBetPercentage);
+    assert.equal(userAccountTwoBet[0].userStakePercentage, expectedUserTwoBetPercentage);
+  });
+
+  it("should emit LogSubmitBet event", async () => {
+    await betting.signInUser(userAccountOne);
+    await betting.addFunds({from: userAccountOne, value: fundAmount});
+    await betting.addGame(teamA, teamB, startTime, endTime, {from: ownerAccount});
+    const tx = await betting.submitBet(gameId, teamToWin, smallBetStakeAmount, {from: userAccountOne});
+    const expectedUserBalance = fundAmount - smallBetStakeAmount;
 
     truffleAssert.eventEmitted(tx, "LogSubmitBet", (ev) => {
-      return ev._user === userAccount && ev._gameId.toNumber() === gameId && ev._sideToWin == teamToWin && ev._betStakeAmount == smallBetStakeAmount
+      return ev._user === userAccountOne && ev._gameId.toNumber() === gameId && ev._sideToWin == teamToWin && ev._betStakeAmount == smallBetStakeAmount && ev._userBalance.toNumber() == expectedUserBalance
     })
   })
 })
