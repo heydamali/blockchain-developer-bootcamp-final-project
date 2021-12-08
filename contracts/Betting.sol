@@ -1,6 +1,8 @@
 /// SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.9.0;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 library SafeMath {
     /**
@@ -154,7 +156,7 @@ library SafeMath {
 /// @title A betting contract
 /// @author Kingsley Arinze O.
 /// @dev This contract does not use oracles as external data source yet.
-contract Betting {
+contract Betting is Ownable, Pausable {
   using SafeMath for uint256;
 /// @dev A game that users can bet on possible outcomes
   struct Game {
@@ -189,8 +191,7 @@ contract Betting {
     uint256 userTotalAmountStaked;
     uint256 userStakePercentage;
   }
-/// @dev The contract owner i.e the deployer of the contract
-  address public owner;
+
   /// @dev The total amount in WEI held by this smart contract
   uint256 private appBalance;
   /// @dev Holds the index of the next game to be added to the system
@@ -207,31 +208,27 @@ contract Betting {
   mapping (address => mapping (uint256 => Stake)) public allBets;
 
   constructor() {
-    owner = msg.sender;
     gameId = 1;
     appBalance = 0;
   }
 
-  /// @dev Checks if the caller is the contract owner
-  modifier isOwner {
-    require(msg.sender == owner, "Only contract owner can perform this action");
-    _;
-  }
   /// @dev Checks if the caller is registered
   modifier isSignedIn {
     require(users[msg.sender] == true, "User not registered");
     _;
   }
- /// @dev Checks if the caller's balance is >= amount
- /// @param _amount Amount to be checked against
+
+  /// @dev Checks if the caller's balance is >= amount
+  /// @param _amount Amount to be checked against
   modifier checkAmount(uint256 _amount) {
     require(_amount <= usersBalance[msg.sender], "Insufficient balance");
     _;
   }
- /// @dev Creates an account for a new user
- /// @param _address Address of the calling user
-  function signInUser(address _address) external {
-    require(_address != owner, "Owner can not be registered");
+
+  /// @dev Creates an account for a new user
+  /// @param _address Address of the calling user
+  function signInUser(address _address) external whenNotPaused() {
+    require(_address != owner(), "Owner can not be registered");
     if(!users[_address] == true) {
       users[_address] = true;
       usersBalance[_address] = 0;
@@ -239,23 +236,25 @@ contract Betting {
       emit LogSignInUser(_address);
     }
   }
- /// @dev Checks a user's registration status
- /// @param _address Address of the calling user
- /// @return The user registration status as true or false
-  function signInStatus(address _address) external view returns (bool) {
+  
+  /// @dev Checks a user's registration status
+  /// @param _address Address of the calling user
+  /// @return The user registration status as true or false
+  function signInStatus(address _address) external view whenNotPaused() returns (bool) {
     return users[_address];
   } 
 
-/// @dev A payable function for depositing money into the contract and funding the caller's wallet
-  function addFunds() external payable isSignedIn {
+  /// @dev A payable function for depositing money into the contract and funding the caller's wallet
+  function addFunds() external payable isSignedIn whenNotPaused() {
     usersBalance[msg.sender] += msg.value;
     emit LogAddFunds(msg.sender, msg.value, usersBalance[msg.sender]);
   }
-/// @dev A payable function for withdrawing funds to an external wallet
-/// @param _to Address to withdraw to
-/// @param _amount Amount to be withdrawn
-/// @return Withdrawn amount in WEI
-  function withdrawFunds(address payable _to, uint256 _amount) external payable isSignedIn checkAmount(_amount) returns (uint256) {
+
+  /// @dev A payable function for withdrawing funds to an external wallet
+  /// @param _to Address to withdraw to
+  /// @param _amount Amount to be withdrawn
+  /// @return Withdrawn amount in WEI
+  function withdrawFunds(address payable _to, uint256 _amount) external payable isSignedIn checkAmount(_amount) whenNotPaused() returns (uint256) {
     usersBalance[msg.sender] -= _amount;
     (bool success, ) = _to.call{value: _amount}("");
     require(success, "Withdrawal failed");
@@ -263,12 +262,12 @@ contract Betting {
     return _amount;
   }
 
-/// @dev A function for adding new games to the system
-/// @param teamA The home team
-/// @param teamB The away team
-/// @param startTime Game start time
-/// @param endTime Game end time
-  function addGame(string memory teamA, string memory teamB, uint256 startTime, uint256 endTime) external isOwner {
+  /// @dev A function for adding new games to the system
+  /// @param teamA The home team
+  /// @param teamB The away team
+  /// @param startTime Game start time
+  /// @param endTime Game end time
+  function addGame(string memory teamA, string memory teamB, uint256 startTime, uint256 endTime) external onlyOwner {
     Game memory game;
       game.gameId = gameId;
       game.teamA = teamA;
@@ -285,17 +284,17 @@ contract Betting {
     emit LogAddGame(teamA, teamB, startTime, endTime);
   }
 
-/// @dev A function that pauses bets on a game
-/// @param _gameId the Index of the game to be closed
-  function closeGame(uint256 _gameId) external isOwner {
+  /// @dev A function that pauses bets on a game
+  /// @param _gameId the Index of the game to be closed
+  function closeGame(uint256 _gameId) external onlyOwner whenNotPaused() {
     require(games[_gameId].isOpen == true, "This game is already closed");
     games[_gameId].isOpen = false;
     emit LogCloseGame(_gameId);
   }
 
-/// @dev A function that fetches all the games in the system
-/// @return A list of all the games in the system
-  function getAllGames() external view returns (Game[] memory) {
+  /// @dev A function that fetches all the games in the system
+  /// @return A list of all the games in the system
+  function getAllGames() external view whenNotPaused() returns (Game[] memory) {
     uint256 resultLength = gameId - 1;
     Game[] memory result = new Game[](resultLength);
     for(uint256 i = 0; i < resultLength; i++) {
@@ -304,9 +303,9 @@ contract Betting {
     return result;
   }
 
-/// @dev A function for fetching a user's bet history
-/// @return A list of all a user's bets
-  function getUserBetsHistory() external view returns (History[] memory) {
+  /// @dev A function for fetching a user's bet history
+  /// @return A list of all a user's bets
+  function getUserBetsHistory() external view whenNotPaused() returns (History[] memory) {
     uint256 resultLength = usersBetList[msg.sender].length;
     History[] memory result = new History[](resultLength);
 
@@ -337,11 +336,11 @@ contract Betting {
     return result;
   }
 
-/// @dev A function for placing new bets
-/// @param _gameId The index of the game to be bet on
-/// @param _teamToWin The team selected to win
-/// @param _betStakeAmount The amount in WEI being staked
-  function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isSignedIn checkAmount(_betStakeAmount) {
+  /// @dev A function for placing new bets
+  /// @param _gameId The index of the game to be bet on
+  /// @param _teamToWin The team selected to win
+  /// @param _betStakeAmount The amount in WEI being staked
+  function submitBet(uint256 _gameId, string memory _teamToWin, uint256 _betStakeAmount) external isSignedIn checkAmount(_betStakeAmount) whenNotPaused() {
     require(games[_gameId].isOpen == true, "This game is no longer accepting stakes");
     require(_betStakeAmount > 0, "Bet stake amount must be greater than 0");
     address user = msg.sender;
@@ -369,10 +368,11 @@ contract Betting {
 
     emit LogSubmitBet(msg.sender, _gameId, _teamToWin, _betStakeAmount, usersBalance[msg.sender]);
   }
-/// @dev A function for updating a game's winner upon game ending - ideally, this should use data from an oracle
-/// @param _gameId the index of the game
-/// @param _winner the winner of the game
-  function updateGameWinner(uint256 _gameId, string memory _winner) external isOwner {
+
+  /// @dev A function for updating a game's winner upon game ending - ideally, this should use data from an oracle
+  /// @param _gameId the index of the game
+  /// @param _winner the winner of the game
+  function updateGameWinner(uint256 _gameId, string memory _winner) external onlyOwner whenNotPaused() {
     require(games[_gameId].isOpen == false, "Can not update winner of an open game");
     require(bytes(games[_gameId].winner).length == 0, "This game already has a winner");
 
@@ -380,9 +380,9 @@ contract Betting {
     emit LogUpdateGameWinner(_gameId, _winner);
   }
 
-/// @dev A function for distributting funds to game winners
-/// @param _gameId the index of the game
-  function disburseBetFunds(uint256 _gameId) external isOwner returns (bool) {
+  /// @dev A function for distributting funds to game winners
+  /// @param _gameId the index of the game
+  function disburseBetFunds(uint256 _gameId) external onlyOwner whenNotPaused() returns (bool) {
 
   }
 
