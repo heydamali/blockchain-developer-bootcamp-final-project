@@ -31,6 +31,18 @@ Possible returns = ((1.1 / 100) * 40000) + 1000 = 1440USD
 ### Materials
 - Access control for limiting access to funds raised as well as setting a time limit before after which funds can be disbursed https://courses.consensys.net/courses/take/blockchain-developer-bootcamp-registration-2021/multimedia/25117355-access-control-design-patterns
 
+## Project Directory Structure
+**/client** - contains frontend code written in react.js.
+**/contracts** - contains smart contract code written is solidity.
+**/migrations** - contains migration scripts for deploying smart contract.
+**/test** - contains unit tests for smart contract code.
+
+## Link to deployed frontend project
+TBD
+## Public Ethereum account for NFT certification
+`arinze.eth(0x5F0ACdE83F858014bc9723B356095E28fc8880B1)` 
+
+
 
 
 
