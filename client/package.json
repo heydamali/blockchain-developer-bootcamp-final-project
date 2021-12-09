@@ -18,6 +18,8 @@
     "@web3-react/injected-connector": "^6.0.7",
     "autoprefixer": "^9",
     "ethers": "^5.4.7",
+    "express": "^4.17.1",
+    "express-favicon": "^2.0.1",
     "postcss": "^7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -28,7 +30,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "node server.js",
     "build": "craco build",
     "test": "craco test",
     "lint": "eslint .",
