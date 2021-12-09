@@ -38,11 +38,33 @@ Possible returns = ((1.1 / 100) * 40000) + 1000 = 1440USD
 **/test** - contains unit tests for smart contract code.
 
 ## Link to deployed frontend project
-TBD
+https://shrouded-forest-22128.herokuapp.com
 ## Public Ethereum account for NFT certification
 `arinze.eth(0x5F0ACdE83F858014bc9723B356095E28fc8880B1)` 
 
+## Running app locally
+### Smart Contract
+Can be found in `/contracts` directory
 
+Follow these steps to run smart contract:
+
+ - Navigate to the project root `/blockchain-developer-bootcamp-final-project`
+ - Install all dependencies with `yarn install`
+ - Compile contracts with `truffle compile`
+ - Compile and deploy contracts with `truffle migrate --network develop`
+ - Run unit tests with `truffle test`, ensure you have Ganache UI running in the background.
+ - 
+### User interface
+
+Follow these steps to run UI:
+
+ - Navigate to the `client` directory
+ - Install all dependencies with `yarn install`
+ - Start the application on locally with `yarn start`
+ - Open web browser and navigate to  `localhost:3000`
+
+### Deploying to testnet/mainnet
+To deploy to any testnet or the mainnet, you'll need to create a `.secret` file in the root of the project and add your mnemonic see phrase.
 
 
 

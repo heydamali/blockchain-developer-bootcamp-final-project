@@ -39869,6 +39869,12 @@
       "address": "0x64fE85634E8A9440fDd689f625AAA1E6D215b7d5",
       "transactionHash": "0xb483527dcf45ca7593b1d6c371f740049698419a206a8bb0c82b5729be3f2bf4"
     },
+    "4": {
+      "events": {},
+      "links": {},
+      "address": "0x24D6EE8750eB67a80776590E4Cbdd4eF866189a9",
+      "transactionHash": "0x40c0fa23524af3d55ed50bce44b20bef97d028cf256ee5d842f09b9d48325244"
+    },
     "5777": {
       "events": {
         "0x938318a96a1b6034221032f1d0f084a342ae89cb9ea9e811f1a5b9dfa7dc1bed": {
@@ -40093,7 +40099,7 @@
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-12-09T16:19:05.337Z",
+  "updatedAt": "2021-12-09T19:14:56.410Z",
   "networkType": "ethereum",
   "devdoc": {
     "author": "Kingsley Arinze O.",

@@ -9,7 +9,7 @@ import { formatEther, parseEther } from '@ethersproject/units';
 const useBetting = () => {
   const { account } = useWeb3React();
   const { getItem } = useLocalStorage();
-  const bettingContractAddress = '0x229c740151Acc5Eec70915f79d206E3C93dEcB04'; // Ganache
+  const bettingContractAddress = '0x24D6EE8750eB67a80776590E4Cbdd4eF866189a9'; // Rinkeby
   const bettingContract = useContract(bettingContractAddress, Betting.abi);
   const {
     appWalletBalance,
