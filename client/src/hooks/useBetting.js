@@ -1,4 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
+import { toast } from 'react-toastify';
 import Betting from '../contracts/Betting.json';
 import { useAppContext } from '../AppContext';
 import { useContract } from './useContract';
@@ -8,7 +9,7 @@ import { formatEther, parseEther } from '@ethersproject/units';
 const useBetting = () => {
   const { account } = useWeb3React();
   const { getItem } = useLocalStorage();
-  const bettingContractAddress = '0xEA1E03d4dD00f5AE3c5f619AAA4e9550d34a71E8'; // Ganache
+  const bettingContractAddress = '0x229c740151Acc5Eec70915f79d206E3C93dEcB04'; // Ganache
   const bettingContract = useContract(bettingContractAddress, Betting.abi);
   const {
     appWalletBalance,
@@ -61,10 +62,13 @@ const useBetting = () => {
       const endTimeBN = new Date(endTime).getTime() / 1000;
 
       await bettingContract.addGame(teamA, teamB, startTimeBN, endTimeBN);
-      const games = await bettingContract.getAllGames();
-      const newGames = _formatGames(games);
-      setGamesList(newGames);
-      console.log('Success adding new game', newGames);
+      bettingContract.on('LogAddGame', async () => {
+        const games = await bettingContract.getAllGames();
+        const newGames = _formatGames(games);
+        setGamesList(newGames);
+        console.log('Success adding new game', newGames);
+        toast('Adding game...');
+      });
     } catch (e) {
       console.log(e, 'Error adding game');
     }
@@ -76,7 +80,9 @@ const useBetting = () => {
       bettingContract.on('LogSignInUser', async () => {
         const status = await _getAndStoreSignInStatus(bettingContract, account);
         setSignInStatus(status);
+        toast('Account created successfully!');
       });
+      toast('Creating account...');
     } catch (e) {
       console.log(e, 'Error signing in user');
     }
@@ -109,7 +115,9 @@ const useBetting = () => {
       bettingContract.on('LogAddFunds', (_, __, userBalance) => {
         console.log('Successfully added fund:', amount, 'Eth');
         setAppWalletBalance(parseFloat(formatEther(userBalance)).toPrecision(4));
+        toast('Fund added successfully!');
       });
+      toast('Adding funds, please waiting  for confirmation...');
     } catch (e) {
       console.log(e, 'Error adding funds');
     }
@@ -122,8 +130,11 @@ const useBetting = () => {
       bettingContract.on('LogSubmitBet', (_, __, ___, ____, userBalance) => {
         console.log('Successfully submitted new bet:', teamToWin, 'to Win');
         setAppWalletBalance(parseFloat(formatEther(userBalance)).toPrecision(4));
+        toast('Bet submitted successfully!');
       });
+      toast('Submitting bet, please wait for confirmation...');
     } catch (e) {
+      toast(e.data.message.split(': ')[1].toUpperCase());
       console.log(e, 'Error submitting bet');
     }
   };

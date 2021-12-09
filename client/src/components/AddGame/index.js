@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import useBetting from '../../hooks/useBetting';
 
@@ -16,6 +17,12 @@ const AddGame = () => {
 
   return (
     <section className="pt-20 flex flex-col items-center">
+      <p className="text-right text-blue-500 hover:text-blue-600 mb-5">
+        <Link className="pr-5" to="/">
+          Home
+        </Link>
+        <Link to="/history">History</Link>
+      </p>
       <h2 className="pb-5">New Game</h2>
       <div className="border-2 rounded border-gray-400 pt-3 w-3/4 flex flex-col">
         <div className="px-5">

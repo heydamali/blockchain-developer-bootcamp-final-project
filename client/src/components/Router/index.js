@@ -1,5 +1,7 @@
 import { Route, BrowserRouter as ReactRouter, Switch } from 'react-router-dom';
+import detectEthereumProvider from '@metamask/detect-provider';
 import { useWeb3React } from '@web3-react/core';
+import { ToastContainer } from 'react-toastify';
 import WalletInfo from '../WalletInfo';
 import HistoryList from '../History';
 import GamesList from '../GamesList';
@@ -9,13 +11,19 @@ import MetaMaskPrompt from '../MetaMaskPrompt';
 import FundAppWallet from '../FundAppWallet';
 import CreateAccountPrompt from '../CreateAccountPrompt/CreateAccountPrompt';
 import useBetting from '../../hooks/useBetting';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Router = () => {
+  const [MMDetected, setMMDetected] = useState(false);
   const { signInStatus, isOwner, fetchSignInStatus, fetchIsOwner } = useBetting();
   const { active } = useWeb3React();
 
-  useEffect(() => {
+  useEffect(async () => {
+    const provider = await detectEthereumProvider();
+    const isSet = provider ? true : false;
+    setMMDetected(isSet);
+
     if (active) {
       fetchSignInStatus();
       fetchIsOwner();
@@ -24,9 +32,10 @@ const Router = () => {
   return (
     <ReactRouter>
       <div className="container mx-auto text-gray-600">
+        <ToastContainer />
         <WalletInfo />
-        {!active ? (
-          <MetaMaskPrompt />
+        {!active || !MMDetected ? (
+          <MetaMaskPrompt active={active} MMDetected={MMDetected} />
         ) : !signInStatus && !isOwner ? (
           <CreateAccountPrompt />
         ) : (

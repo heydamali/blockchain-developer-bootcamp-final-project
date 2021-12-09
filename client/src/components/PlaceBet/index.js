@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useAppContext } from '../../AppContext';
 import useBetting from '../../hooks/useBetting';
 
@@ -9,7 +9,7 @@ const PlaceBet = () => {
   const { gameId } = useParams();
   const { gamesList } = useAppContext();
   const game = gamesList[parseInt(gameId) - 1]; // because gameId from contract starts from 1 while array starts at index 0
-  const { submitBet } = useBetting();
+  const { submitBet, isOwner } = useBetting();
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -18,6 +18,20 @@ const PlaceBet = () => {
 
   return (
     <section className="pt-20 flex flex-col items-center">
+      <p className="text-center text-blue-500 hover:text-blue-600 mb-5">
+        {isOwner && (
+          <Link to="/new-game" style={{ paddingRight: '20px' }}>
+            Add Game
+          </Link>
+        )}
+        <Link className="pr-5" to="/">
+          Home
+        </Link>
+        <Link className="pr-5" to="/history">
+          History
+        </Link>
+        <Link to="/fund-app-wallet">Add Fund</Link>
+      </p>
       <h2 className="pb-5">
         {game.teamA} vs {game.teamB}
       </h2>

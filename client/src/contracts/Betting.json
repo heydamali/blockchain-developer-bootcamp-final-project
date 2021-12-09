@@ -253,7 +253,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -266,7 +267,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -325,7 +327,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -338,7 +341,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -351,7 +355,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -390,7 +395,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -409,7 +415,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -433,7 +440,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -465,14 +473,16 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
       "name": "addFunds",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function"
+      "type": "function",
+      "payable": true
     },
     {
       "inputs": [
@@ -496,7 +506,8 @@
         }
       ],
       "stateMutability": "payable",
-      "type": "function"
+      "type": "function",
+      "payable": true
     },
     {
       "inputs": [
@@ -597,7 +608,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -672,7 +684,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -39857,14 +39870,231 @@
       "transactionHash": "0xb483527dcf45ca7593b1d6c371f740049698419a206a8bb0c82b5729be3f2bf4"
     },
     "5777": {
-      "events": {},
+      "events": {
+        "0x938318a96a1b6034221032f1d0f084a342ae89cb9ea9e811f1a5b9dfa7dc1bed": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_sender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_userBalance",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogAddFunds",
+          "type": "event"
+        },
+        "0x0bfce854c1cd16d4f0808949802d6262e3a086711bc7968a170a112860975f63": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_teamA",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_teamB",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_startTime",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_endTime",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogAddGame",
+          "type": "event"
+        },
+        "0x24a5dbf244dd4fdeabd46c3805b8bd07f9b99e43d2209810e9ed7a90d6494295": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_gameId",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogCloseGame",
+          "type": "event"
+        },
+        "0x81ff918e25c1b1e5d798005dbd6bac6381f39c8bd600d96e3144fd14543da795": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_gameId",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogDisburseBetFunds",
+          "type": "event"
+        },
+        "0xc743ccff48012312e9853b6c664d256dbf986977bccfdc1185848ef09092011f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_address",
+              "type": "address"
+            }
+          ],
+          "name": "LogSignInUser",
+          "type": "event"
+        },
+        "0xa9f47223c151f2e248554dd2758229dceb80a21de3877f60ae604e35468cf4ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_user",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_gameId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_sideToWin",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_betStakeAmount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_userBalance",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogSubmitBet",
+          "type": "event"
+        },
+        "0x1da28083458e812c85b645713b82ac43e2ca08cf842ba14d6a80bd456967527f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_gameId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_winner",
+              "type": "string"
+            }
+          ],
+          "name": "LogUpdateGameWinner",
+          "type": "event"
+        },
+        "0x333d9f35320f28a9518fc6083975ac7d7465f020712cda7608ca073ea651f264": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogWithdrawFunds",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
       "links": {},
-      "address": "0xEA1E03d4dD00f5AE3c5f619AAA4e9550d34a71E8",
-      "transactionHash": "0xa01c0744ed58f7fd6857f4c1c578229924ece4aafb4cb12a7429e3c91ed15927"
+      "address": "0x229c740151Acc5Eec70915f79d206E3C93dEcB04",
+      "transactionHash": "0x699c13acbc2cee4fc57b89a788b5b7d528f418bb7635256629a4cd330629da5b"
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-12-08T15:24:53.683Z",
+  "updatedAt": "2021-12-09T16:19:05.337Z",
+  "networkType": "ethereum",
   "devdoc": {
     "author": "Kingsley Arinze O.",
     "details": "This contract does not use oracles as external data sources yet.",

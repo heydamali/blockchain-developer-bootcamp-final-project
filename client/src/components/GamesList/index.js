@@ -1,12 +1,24 @@
 import { Link } from 'react-router-dom';
+import { useWeb3React } from '@web3-react/core';
+import { useEffect } from 'react';
 import useBetting from '../../hooks/useBetting';
 
 const GamesList = () => {
-  const { gamesList } = useBetting();
+  const { gamesList, isOwner, fetchGamesList } = useBetting();
+  const { account } = useWeb3React();
+
+  useEffect(() => {
+    fetchGamesList();
+  }, [account]);
 
   return (
     <section className="pt-10">
-      <p className="text-right text-blue-500 hover:text-blue-600 mb-5">
+      <p className="text-center text-blue-500 hover:text-blue-600 mb-5">
+        {isOwner && (
+          <Link to="/new-game" style={{ paddingRight: '20px' }}>
+            Add Game
+          </Link>
+        )}
         <Link to="/history">History</Link>
       </p>
 

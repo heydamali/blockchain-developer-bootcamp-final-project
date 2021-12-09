@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import useBetting from '../../hooks/useBetting';
 
 const FundAppWallet = () => {
   const [amount, setAmount] = useState('');
-  const { addFunds } = useBetting();
+  const { addFunds, isOwner } = useBetting();
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -12,6 +13,19 @@ const FundAppWallet = () => {
 
   return (
     <section className="pt-20 flex flex-col items-center">
+      <p className="text-center text-blue-500 hover:text-blue-600 mb-5">
+        {isOwner && (
+          <Link to="/new-game" style={{ paddingRight: '20px' }}>
+            Add Game
+          </Link>
+        )}
+        <Link className="pr-5" to="/">
+          Home
+        </Link>
+        <Link className="pr-5" to="/history">
+          History
+        </Link>
+      </p>
       <div className="border-2 rounded border-gray-400 pt-3 w-3/4 flex flex-col">
         <p className="m-0 text-center">Fund App Wallet</p>
         <div className="px-5">
