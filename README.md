@@ -53,12 +53,12 @@ Follow these steps to run smart contract:
  - Compile contracts with `truffle compile`
  - Compile and deploy contracts with `truffle migrate --network develop`
  - Run unit tests with `truffle test`, ensure you have Ganache UI running in the background.
- - 
+  
 ### User interface
 
 Follow these steps to run UI:
 
- - Navigate to the `client` directory
+ - Navigate to the `/client` directory
  - Install all dependencies with `yarn install`
  - Start the application on locally with `yarn start`
  - Open web browser and navigate to  `localhost:3000`
@@ -66,6 +66,5 @@ Follow these steps to run UI:
 ### Deploying to testnet/mainnet
 To deploy to any testnet or the mainnet, you'll need to create a `.secret` file in the root of the project and add your mnemonic see phrase.
 
-
-
-
+### Video Demo Link
+https://www.loom.com/share/76d2bf74f9fd4acd91d15ad715de6c7b
